@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+        --bg-main: #fafff7;
+        --bg-sidebar: #f0f4f8;
+        --bg-message-user: #e0f7f9;
+        --bg-message-bot: #cfeaf5;
+        --text-primary: #333333;
+        --text-secondary: #666666;
+        --accent-1: #84fab0;
+        --accent-2: #8fd3f4;
+        --accent-3: #5dc2e5;
+        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    h1 {
+        color: var(--accent-3);
+        margin-bottom: 20px;
+        font-size: 2em;
+    }
+
+    #messages {
+        border: 1px solid var(--accent-2);
+        background: #fff;
+        border-radius: 15px;
+        padding: 15px;
+        width: 100%;
+        max-width: 1200px; 
+        height: 700px;
+        overflow-y: scroll;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    #messageInput {
+        width: calc(100% - 110px);
+        padding: 12px;
+        border: 1px solid var(--accent-2);
+        border-radius: 8px 0 0 8px;
+        font-size: 16px;
+        transition: var(--transition);
+    }
+
+    #messageInput:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(143, 211, 244, 0.5);
+    }
+
+    #sendButton {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 0 8px 8px 0;
+        background: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+        color: var(--text-primary);
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    #sendButton:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(74, 74, 224, 0.4);
+    }
+
+    .message {
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .message.user {
+        background-color: var(--bg-message-user);
+        color: var(--text-primary);
+        align-self: flex-end;
+        margin-left: auto;
+    }
+
+    .message.ai {
+        background-color: var(--bg-message-bot);
+        color: var(--text-primary);
+        align-self: flex-start;
+        margin-right: auto;
+    }
+
+    .message .sender {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .status {
+        font-style: italic;
+        color: var(--text-secondary);
+        text-align: center;
+        margin: 10px 0;
+        align-self: center;
+    }
+
+    .input-container {
+        display: flex;
+        width: 100%;
+        max-width: 800px; /* Increased from 600px */
+    }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Chat Room: {{ room }}</h1>
+    <div id="messages"></div>
+
+    <div class="input-container">
+        <input id="messageInput" autocomplete="off" placeholder="Type a message" />
+        <button id="sendButton"><i class="fas fa-paper-plane"></i> Send</button>
+    </div>
+
+    <script type="text/javascript">
+        var socket = io();
+
+        // Join room
+        socket.emit('join', {'username': "{{ username }}", 'room': "{{ room }}"});
+
+        // Listen for new messages
+        socket.on('message', function(data) {
+            var messageElement = document.createElement('div');
+            messageElement.className = 'message user';
+            
+            var senderElement = document.createElement('div');
+            senderElement.className = 'sender';
+            senderElement.textContent = data.username;
+            
+            var contentElement = document.createElement('div');
+            contentElement.textContent = data.message;
+            
+            messageElement.appendChild(senderElement);
+            messageElement.appendChild(contentElement);
+            
+            document.getElementById('messages').appendChild(messageElement);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        });
+
+        // Listen for status updates (join/leave messages)
+        socket.on('status', function(data) {
+            var statusElement = document.createElement('div');
+            statusElement.className = 'status';
+            statusElement.textContent = data.message;
+            document.getElementById('messages').appendChild(statusElement);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        });
+
+        // Handle sending messages
+        document.getElementById('sendButton').addEventListener('click', function() {
+            var message = document.getElementById('messageInput').value;
+            if (message.trim() !== '') {
+                socket.emit('message', {'message': message});
+                document.getElementById('messageInput').value = '';
+            }
+        });
+
+        // Handle Enter key for sending messages
+        document.getElementById('messageInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('sendButton').click();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask Questions</title>
+</head>
+<body>
+    <h1>Follow-up Questions</h1>
+    <form action="{{ url_for('collect_responses') }}" method="POST">
+        <h2>Agenda: {{ agenda }}</h2>
+        {% for question in questions %}
+            <label for="{{ question }}">{{ question }}</label><br>
+            <input type="text" id="{{ question }}" name="{{ question }}" required><br><br>
+        {% endfor %}
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

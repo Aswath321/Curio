@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Post</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="max-w-4xl mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">Preview Your Post</h1>
+        
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Post Content:</h2>
+            <div class="post-content mb-6 p-4 border rounded">
+                {{ post_content }}
+            </div>
+        </div>
+
+        <form action="{{ url_for('preview_post') }}" method="post" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Image Options:</h2>
+            <div class="mb-4">
+                <div class="flex items-center mb-2">
+                    <input type="radio" id="ai_image" name="image_choice" value="1" class="mr-2">
+                    <label for="ai_image" class="text-gray-700">Generate AI Image</label>
+                </div>
+                <div class="flex items-center mb-2">
+                    <input type="radio" id="upload_image" name="image_choice" value="2" class="mr-2">
+                    <label for="upload_image" class="text-gray-700">Upload Image</label>
+                    <input type="file" name="image" accept=".png,.jpg,.jpeg,.gif" class="ml-4">
+                </div>
+                <div class="flex items-center">
+                    <input type="radio" id="no_image" name="image_choice" value="3" class="mr-2">
+                    <label for="no_image" class="text-gray-700">No Image</label>
+                </div>
+            </div>
+            
+            <button type="submit" name="action" value="generate_image" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4">
+                Generate/Upload Image
+            </button>
+
+            {% if generated_image %}
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold mb-2">Generated AI Image:</h3>
+                    <img src="{{ url_for('serve_image', filename=generated_image.split('/')[-1]) }}" alt="Generated AI Image" class="max-w-full h-auto">
+                </div>
+            {% endif %}
+
+            {% if uploaded_image %}
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold mb-2">Uploaded Image:</h3>
+                    <img src="{{ url_for('serve_image', filename=uploaded_image.split('/')[-1]) }}" alt="Uploaded Image" class="max-w-full h-auto">
+                </div>
+            {% endif %}
+
+            {% if generated_image or uploaded_image %}
+                <h2 class="text-2xl font-bold mb-4">Post Options:</h2>
+                <div class="mb-4">
+                    <div class="flex items-center mb-2">
+                        <input type="checkbox" id="post_to_feed" name="post_to_feed" value="yes" class="mr-2">
+                        <label for="post_to_feed" class="text-gray-700">Post to Feed</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="post_to_groups" name="post_to_groups" value="yes" class="mr-2">
+                        <label for="post_to_groups" class="text-gray-700">Post to Groups</label>
+                    </div>
+                </div>
+
+                <button type="submit" name="action" value="post" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Post
+                </button>
+            {% endif %}
+        </form>
+
+        <a href="{{ url_for('dashboard') }}" class="inline-block bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Back to Dashboard
+        </a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,106 @@
+Open in app
+
+Sign up
+
+Sign in
+
+Write
+
+Sign up
+
+Sign in
+
+![\\"\\"](\\"https://miro.medium.com/v2/resize:fill:64:64/1*dmbNkD5D-u45r44go_cf0g.png\\")
+
+Member-only story
+
+# How to Fine-Tune Newly Released LLama-3.2–11B Vision-Language Models (VLMs)
+on Custom Dataset.
+
+![\\"Samar](\\"https://miro.medium.com/v2/da:true/resize:fill:88:88/0*2cpqEgR9BJY-4CLn\\")
+
+Samar Singh
+
+·
+
+Follow
+
+10 min read
+
+·
+
+Oct 3, 2024
+
+\--
+
+1
+
+Share
+
+Multimodal large language models (LLMs) are pushing the boundaries of AI
+capabilities by enabling machines to understand both visual and textual
+information. Popular models such as Meta AI’s Llama-3.2–11B-Vision, Mistral
+AI’s Pixtral-12B and Qwen’s Qwen2-VL-7B can handle tasks like image
+captioning, visual question answering, and image-text matching out of the box.
+
+While these pre-trained models are impressive, sometimes you need to fine-tune
+them to suit your specific needs. This guide will walk you through how to
+fine-tune these powerful VLMs, specifically newly released llama 3.2 vision
+model.
+
+![\\"\\"](\\"https://miro.medium.com/v2/resize:fit:700/1*qfkm8pJquJ3z_Tbq9lUX0g.png\\")
+
+# Key Steps in Fine-Tuning a VLM:
+
+  1. Define your use case
+  2. Set up the development environment
+  3. Prepare the dataset
+  4. Fine-tune the VLM using TRL and SFTTrainer
+  5. Test the fine-tuned model
+
+Let’s dive into each step in detail.
+
+# 1\. Defining Your Multimodal Use Case
+
+Before fine-tuning any model, you must have a clear understanding of the
+problem you’re trying to solve. For VLMs, this typically involves tasks that
+integrate visual and…
+
+\--
+
+\--
+
+1
+
+![\\"Samar](\\"https://miro.medium.com/v2/da:true/resize:fill:144:144/0*2cpqEgR9BJY-4CLn\\")
+
+Follow
+
+## Written by Samar Singh
+
+84 Followers
+
+I Build Scalable AI Solutions 🚀 | Empowering Businesses with Intelligent Automation
+
+Follow
+
+Help
+
+Status
+
+About
+
+Careers
+
+Press
+
+Blog
+
+Privacy
+
+Terms
+
+Text to speech
+
+Teams
+

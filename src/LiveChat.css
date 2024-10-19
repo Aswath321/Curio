@@ -1,0 +1,134 @@
+/* Container that ensures centering */
+.voice-control-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: #000;
+    position: relative; /* Added for proper z-index context */
+}
+
+/* Content styling for voice control */
+.voice-control-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Added for proper z-index context */
+    z-index: 2; /* Ensure content stays above visualization */
+}
+
+/* Mic button styling */
+.voice-control-mic-btn {
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    position: relative; /* Added for proper z-index context */
+    z-index: 3; /* Highest z-index to ensure clickability */
+}
+
+/* Active state */
+.voice-control-mic-btn:hover {
+    transform: scale(1.1);
+}
+
+.mic-active {
+    animation: pulse-animation 1.5s infinite;
+}
+
+/* Mic icon sizing */
+.voice-control-mic-icon {
+    width: 96px;
+    height: 96px;
+}
+
+.mic-on {
+    color: red;
+}
+
+.mic-off {
+    color: white;
+}
+
+/* Status text */
+.voice-control-status {
+    margin-top: 12px;
+    color: #ccc;
+    font-size: 16px;
+    position: relative; /* Added for proper z-index context */
+    z-index: 2; /* Ensure text stays above visualization */
+}
+
+/* Visual effect for active mic */
+.voice-visualization {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none; /* Ensure circles don't block clicks */
+    z-index: 1; /* Keep visualization behind content */
+}
+
+/* Circles animation */
+.voice-circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.2;
+    animation: circle-animation 1.5s infinite;
+    pointer-events: none; /* Ensure circles don't block clicks */
+}
+
+.circle-1 {
+    width: 150px;
+    height: 150px;
+    background-color: #ffffff1a;
+    animation-delay: 0.2s;
+}
+
+.circle-2 {
+    width: 200px;
+    height: 200px;
+    background-color: #ffffff26;
+    animation-delay: 0.4s;
+}
+
+.circle-3 {
+    width: 250px;
+    height: 250px;
+    background-color: #ffffff33;
+    animation-delay: 0.6s;
+}
+
+/* Animation for circles */
+@keyframes circle-animation {
+    0% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+}
+
+/* Pulse animation for active mic */
+@keyframes pulse-animation {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

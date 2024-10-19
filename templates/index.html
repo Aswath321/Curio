@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create or Join Room</title>
+    <style>
+        :root {
+            --bg-main: #fafff7;
+            --bg-sidebar: #f0f4f8;
+            --bg-message-user: #e0f7f9;
+            --bg-message-bot: #cfeaf5;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent-1: #84fab0;
+            --accent-2: #8fd3f4;
+            --accent-3: #5dc2e5;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        h1 {
+            color: var(--text-primary);
+            margin-bottom: 30px;
+        }
+
+        .container {
+            background: linear-gradient(45deg, var(--bg-message-user), var(--bg-message-bot));
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        h2 {
+            color: var(--text-primary);
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 12px;
+            border: 1px solid var(--accent-2);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(143, 211, 244, 0.5);
+        }
+
+        button {
+            background: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(74, 74, 224, 0.4);
+        }
+
+        .form-section {
+            margin: 30px 0;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <h1>Create or Join a Chat Room</h1>
+
+    <div class="container form-section">
+        <h2>Create a New Room</h2>
+        <form action="/create_room" method="POST">
+            <label for="create-username">Enter your username:</label>
+            <input type="text" id="create-username" name="username" required>
+            <button type="submit">Create Room</button>
+        </form>
+    </div>
+
+    <div class="container form-section">
+        <h2>Join an Existing Room</h2>
+        <form action="/join_room" method="POST">
+            <label for="join-username">Enter your username:</label>
+            <input type="text" id="join-username" name="username" required>
+            <label for="room_id">Enter Room ID:</label>
+            <input type="text" id="room_id" name="room_id" required>
+            <button type="submit">Join Room</button>
+        </form>
+    </div>
+</body>
+</html>

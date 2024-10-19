@@ -1,0 +1,576 @@
+Open in app
+
+Sign up
+
+Sign in
+
+Write
+
+Sign up
+
+Sign in
+
+![\\"\\"](\\"https://miro.medium.com/v2/resize:fill:64:64/1*dmbNkD5D-u45r44go_cf0g.png\\")
+
+# LangChain Persistent Memory Chatbots with Gemini Pro and Firebase
+
+![\\"Daniel](\\"https://miro.medium.com/v2/resize:fill:88:88/1*jmJaBTRrIaq0ejP_JxZvAw.png\\")
+
+![\\"Google](\\"https://miro.medium.com/v2/resize:fill:48:48/1*Zkhl4Zz43z2_iR_ADlP-
+rg.png\\")
+
+Daniel Gwerzman
+
+·
+
+Follow
+
+Published in
+
+Google Developer Experts
+
+·
+
+8 min read
+
+·
+
+Feb 20, 2024
+
+\--
+
+1
+
+Listen
+
+Share
+
+![\\"\\"](\\"https://miro.medium.com/v2/resize:fit:700/1*anFTw83slASwJU_CkbtCBA.jpeg\\")
+
+In the rapidly evolving landscape of artificial intelligence, the evolution
+from simple scripted chatbots to today’s advanced conversational AI represents
+a significant leap forward. These cutting-edge chatbots, empowered by the
+latest in AI technology, have redefined the way we interact with digital
+platforms — providing tailored advice, support, and even a sense of
+companionship. Yet, the essence of truly meaningful conversation goes beyond
+just understanding and responding in real-time; it hinges on the ability to
+recall and build upon past interactions. Enter the concept of persistent
+memory, a game-changer that transforms ephemeral chats into continuous,
+evolving dialogues that deepen with each interaction.
+
+This article delves into the technical breakthrough of integrating LangChain
+with Google’s Gemini Pro and Firebase, crafting a chatbot framework that not
+only grasps complex inquiries but also maintains a persistent memory across
+sessions. For developers, this fusion heralds a new era of chatbot
+capabilities, where the burden of managing live session states is alleviated.
+Instead, chat histories are securely stored, enabling users to resume
+conversations at their leisure, just as they would with a human counterpart.
+This shift towards persistent memory chatbots opens the door to more
+personalized, engaging, and genuinely human-like interactions, setting a new
+standard in the realm of conversational AI.
+
+# Setting Up the Environment
+
+Before diving into the intricacies of building a chatbot with persistent
+memory, it’s essential to lay down the foundation. This means setting up our
+environment with the right tools and services. For our project, we’ll be
+leveraging LangChain for the AI logic, Firebase Admin for database
+interactions, and Google Cloud’s Vertex AI for using the Gemini Pro model.
+Here’s how to get everything up and running.
+
+## Prerequisites
+
+  * Python Environment: Ensure you have Python installed or use this Colab, as we’ll be using it for our script executions.
+  * Google Cloud account.
+
+## Step-by-Step Setup
+
+Set up a Firebase project:
+
+  1. If you don’t already have a Firebase project, create a new project in the Firebase console. Then, open your project and do the following:
+  2. On the Settings page, create a service account and download the service account key file. Keep this file safe, since it grants administrator access to your project. Remember the service account name for step 4.
+  3. Save/Upload the credentials JSON service account key file, as it will be used to authenticate your application.
+  4. On the IAM page in Google Cloud console, Add `Vertex AI User` role to the Firebase service account.
+
+Enable Vertex AI:
+
+  1. In Google Cloud console, select the Firebase project.
+  2. Make sure that billing is enabled for your Google Cloud project.
+  3. Enable the Vertex AI for that project.
+
+Install the necessary packages for using LangChain with Vertexe AI and
+Firebase:
+
+```
+
+    
+    
+    pip install --upgrade --quiet langchain-google-vertexai langchain firebase-admin
+```
+
+Set up the environment variable:
+
+To allow your application to authenticate with Firebase, set the
+GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of the JSON
+file you just downloaded
+
+For example, in a Unix-like shell, you can use the following command:
+
+```
+
+    
+    
+    export GOOGLE_APPLICATION_CREDENTIALS=\"/path/to/your/firebase-key.json\"
+```
+
+For Colab, use this :
+
+```
+
+    
+    
+    import os  
+    os.environ[“GOOGLE_APPLICATION_CREDENTIALS”] = “/path/to/your/firebase-key.json”
+```
+
+# Initializing Firebase and LangChain
+
+With our environment now fully prepared, the following steps will guide us
+through the code required to initialize Firebase and LangChain, setting the
+stage for a seamless integration between these powerful tools.
+
+## Initializing Firebase Admin SDK
+
+To kick things off, we’ll start by initializing the Firebase Admin SDK within
+our Python script. This crucial step ensures that our application can securely
+communicate with Firebase services, including Firestore, which acts as the
+repository for our chat histories.
+
+```
+
+    
+    
+    import firebase_admin  
+    from firebase_admin import credentials, firestore  
+      
+      
+    app = firebase_admin.initialize_app()  
+    client = firestore.client(app=app)
+```
+
+## Initializing Vertexe AI
+
+Next, we’ll initialize the Vertex AI client. This process is essential for
+enabling LangChain to utilize the Gemini Pro model, a cornerstone of our
+chatbot’s intelligence.
+
+```
+
+    
+    
+    import vertexai  
+    vertexai.init()
+```
+
+## Setting Up LangChain
+
+With Firebase and Vertex AI ready, our final step involves setting up
+LangChain’s chat object for our conversational AI needs.
+
+```
+
+    
+    
+    from langchain_core.prompts import ChatPromptTemplate  
+    from langchain_google_vertexai import ChatVertexAI  
+    from langchain_core.messages import HumanMessage, AIMessage  
+      
+      
+    # Initialize ChatVertexAI with Gemini Pro model  
+    chat = ChatVertexAI(model_name=\"gemini-pro\", convert_system_message_to_human=True)
+```
+
+This setup leverages LangChain to create a ChatVertexAI chat, specifically
+tailored for use with the Gemini Pro model. A noteworthy point here is the
+handling of system messages; Gemini Pro does not inherently support them. By
+setting convert_system_message_to_human to True, we cleverly merge any system
+messages into the human message, ensuring a smooth and uninterrupted
+conversational flow.
+
+# Testing the chat
+
+Before delving deeper into our chatbot’s capabilities, it’s crucial to verify
+that the model operates as expected. This step ensures we can effectively use
+a LangChain chain to invoke the model, enabling meaningful interactions. Let’s
+conduct a couple of tests to confirm the functionality of our setup.
+
+## Testing the Chat Model
+
+Our initial test involves a straightforward conversation aimed at assessing
+the chat model’s ability to process and respond accurately. Here, we simulate
+a conversation where the chatbot is asked to translate a sentence from English
+to French, followed by a query about its previous response.
+
+```
+
+    
+    
+    chat.invoke(  
+      [  
+        HumanMessage(  
+          content=\"Translate this sentence from English to French: I love programming.\"  
+        ),  
+        AIMessage(content=\"J\'adore la programmation.\"),  
+        HumanMessage(content=\"What did you just say?\"),  
+      ]  
+    )
+```
+
+The expected output showcases the chatbot’s ability to understand and respond
+appropriately:
+
+```
+
+    
+    
+    AIMessage(content=\'Je viens de dire \"J\\'adore la programmation\" en français, qui signifie \"I love programming\" en anglais.\')
+```
+
+This confirms that the chat model is operational and capable of handling
+complex queries, including translations and follow-up questions.
+
+## Adding a Prompt with System Message and Creating a Chain
+
+To enhance our chatbot’s interactivity, let’s introduce a prompt with a system
+message, setting a specific conversational tone or directive for the chatbot
+to follow. This setup instructs the chatbot to adopt a humorous persona and
+respond in Italian.
+
+```
+
+    
+    
+    from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder  
+      
+      
+    prompt = ChatPromptTemplate.from_messages(  
+      [  
+        (  
+          \"system\",  
+          \"You are a funny assistant. Answer all questions in italian.\",  
+        ),  
+        MessagesPlaceholder(variable_name=\"messages\"),  
+      ]  
+    )  
+      
+      
+    chain = prompt | chat
+```
+
+Creating this chain melds our chat model with the newly defined prompt,
+gearing the chatbot towards a more tailored conversational experience.
+
+## Testing the Chain
+
+With the chain established, it’s time to put it to the test. This involves
+simulating a conversation where the user introduces themselves, receives a
+greeting, and then inquires about the chatbot’s last message.
+
+```
+
+    
+    
+    chain.invoke(  
+      {  
+        \"messages\": [  
+          HumanMessage(  
+            content=\"My name is Bob.\"  
+          ),  
+          AIMessage(content=\"Hi Bob.\"),  
+          HumanMessage(content=\"What did you just say?\"),  
+        ],  
+      }  
+    )
+```
+
+The expected output adheres to the specified prompt, demonstrating the
+chatbot’s compliance with our directive to respond in Italian:
+
+```
+
+    
+    
+    AIMessage(content=\'Ho appena detto: Ciao Bob.\')
+```
+
+These tests confirm not only the functionality of our chat model but also the
+flexibility and adaptability of our setup.
+
+# Implementing Persistent Memory with Firestore in Chatbots
+
+To enrich our chatbot with the ability to recall previous conversations, we’ll
+utilize Firestore for persistent memory storage. This section outlines how to
+define functions for retrieving chat history from Firestore and engaging in
+conversations that utilize this history for contextual continuity.
+
+## Integrating Firestore Chat Message Histories
+
+First, we import the necessary module from the LangChain community library,
+which provides a seamless interface for working with chat message histories in
+Firestore:
+
+```
+
+    
+    
+    from langchain_community.chat_message_histories.firestore import (  
+      FirestoreChatMessageHistory,  
+    )
+```
+
+## Fetching Chat History
+
+The fetchChatHistory function is crucial for retrieving a user’s chat history
+from Firestore. It ensures that each conversation is contextual and
+personalized, enhancing the overall user experience. It takes in the user_id
+and session_id as parameters.
+
+```
+
+    
+    
+    def fetchChatHistory(user_id, session_id):  
+     message_history = FirestoreChatMessageHistory(  
+      collection_name=f\"chat-history/users/{user_id}\",  
+      session_id=session_id,  
+      user_id=user_id,  
+      firestore_client=client  
+     )  
+     return message_history
+```
+
+It first creates a FirestoreChatMessageHistory object, This object is
+initialized with the collection name, session ID, user ID, and the Firestore
+client.
+
+The FirestoreChatMessageHistory object only stores the user ID within each
+session document. This means that session IDs must be unique across different
+users.
+
+For example, two users could have a session with ID “s1”, and their messages
+would collide in Firestore.
+
+To fix this, the collection_name in this example includes the user ID — “chat-
+history/users/{user_id}”.
+
+By adding the user ID into the collection path, it ensures that each session
+ID is unique per user.
+
+So “s1” for user A would be stored in “chat-history/users/A/s1”, while “s1”
+for user B would be in “chat-history/users/B/s1”.
+
+This structure prevents session ID collisions across different users, making
+sure the chat history stays isolated for each individual user account.
+
+The session_id represents a particular conversation session for that user.
+Storing chats by session allows the chatbot to maintain context within a given
+session.
+
+The user_id identifies which user’s chat history to retrieve.
+
+The firestore_client is the initialized Firebase Firestore client from earlier
+in the notebook.
+
+Finally, the FirestoreChatMessageHistory object is returned, which contains
+the message history for the specified user ID and session ID. This object can
+then be used to retrieve the chat history or add new messages to the
+conversation.
+
+## Facilitating Conversations with Chat History
+
+The chatWithChain function bridges the user and the chatbot, enabling
+conversations that are enriched with historical context. This function takes
+the user’s message and the chat message history object as parameters,
+performing the following actions:
+
+  1. Add User’s Message: The user’s message is added to the chat history, preserving the flow of conversation.
+  2. Invoke LangChain Chain: The chatbot model is then invoked with the complete message history, allowing it to consider the context of the conversation.
+  3. Store Chatbot’s Response: The response from the chatbot is added back into the chat history, further enhancing the conversation’s context for future interactions.
+  4. Output Chatbot’s Response: Finally, the chatbot’s response is printed, providing immediate feedback to the user.
+
+```
+
+    
+    
+    def chatWithChain(message, chat_message_history):  
+     chat_message_history.add_user_message(message)  
+     response = chain.invoke({\"messages\": chat_message_history.messages})  
+     chat_message_history.add_ai_message(response)  
+     print(response)
+```
+
+Through these steps, we’ve effectively prepared the Firestore memory to
+support our chatbot, enabling it to remember and leverage previous
+conversations for a more engaging and personalized user interaction.
+
+# Run the chain with FireStore memory
+
+To demonstrate the power of integrating Firestore memory with our chatbot,
+let’s set up a scenario where we initialize chat histories for two different
+users and engage in conversations. This exercise will showcase the chatbot’s
+remarkable ability to remember names, illustrating how persistent memory
+enhances the conversational experience.
+
+## Initializing Chat Histories for Two Users
+
+First, we initialize chat histories for two users, identified by user IDs and
+session IDs. This step is crucial for simulating separate conversation
+threads, each with its unique context and history.
+
+```
+
+    
+    
+    chat_history = fetchChatHistory(\"123\", \"s-1\")  
+    chatWithChain(\'My name is Marco, What is your name?\', chat_history)  
+      
+    # content=\'Il mio nome è Assistente, piacere di conoscerti Marco!\'  
+      
+    chat_history = fetchChatHistory(\"123\", \"s-2\")  
+    chatWithChain(\'My name is Bob, What is your name?\', chat_history)  
+      
+    # content=\'Mi chiamo Assistente.\'
+```
+
+## Demonstrating Memory Recall
+
+Next, we revisit these sessions to test the chatbot’s ability to recall the
+names it was previously given, a critical demonstration of the Firestore
+memory’s effectiveness.
+
+```
+
+    
+    
+    chat_history = fetchChatHistory(\"123\", \"s-1\")  
+    chatWithChain(\'Do you know my name?\', chat_history)  
+      
+    #content=\'Certo, mi hai detto che ti chiami Marco!\'  
+      
+    chat_history = fetchChatHistory(\"123\", \"s-2\")  
+    chatWithChain(\'Do you know my name?\', chat_history)  
+      
+    #content=\'Sì, il tuo nome è Bob.\'
+```
+
+Through these interactions, the chatbot successfully recalls and uses the
+names provided in earlier parts of the conversation, showcasing its ability to
+maintain context over time. This feature not only makes the chatbot appear
+more intelligent and responsive but also significantly enhances the user
+experience by providing a sense of continuity and personalization.
+
+# Conclusion
+
+The integration of LangChain with Firebase for persistent memory marks a
+significant advancement in the development of chatbots, transcending the
+limitations of session-based interactions. By leveraging Firestore to store
+chat histories, developers are empowered to create chatbots that not only
+remember user interactions across sessions but also provide a seamless and
+continuous conversational experience. This capability allows users to pick up
+conversations where they left off, at their convenience, without the need for
+developers to maintain live session states.
+
+This approach not only enhances the user experience by making chatbots more
+intuitive and personal but also simplifies the developer’s task. The
+persistent memory model opens up a plethora of customization and
+implementation possibilities, encouraging developers to explore new frontiers
+in chatbot functionalities. Whether it’s for customer service, personal
+assistance, or interactive storytelling, the potential applications are vast
+and varied.
+
+*Colab: https://colab.research.google.com/drive/1oZbP9QGr-rL9k8r2O8hvBqPvFejEzsHW?usp=sharing
+
+![](\\"https://miro.medium.com/v2/da:true/resize:fit:0/5c50caa54067fd622d2f0fac18392213bf92f6e2fae89b691e62bceb40885e74\\"/)
+
+## Sign up to discover human stories that deepen your understanding of the
+world.
+
+## Free
+
+Distraction-free reading. No ads.
+
+Organize your knowledge with lists and highlights.
+
+Tell your story. Find your audience.
+
+Sign up for free
+
+## Membership
+
+Read member-only stories
+
+Support writers you read most
+
+Earn money for your writing
+
+Listen to audio narrations
+
+Read offline with the Medium app
+
+Try for $5/month
+
+Google Gemini Pro
+
+Langchain
+
+Firebase
+
+Vertex AI
+
+\--
+
+\--
+
+1
+
+![\\"Daniel](\\"https://miro.medium.com/v2/resize:fill:144:144/1*jmJaBTRrIaq0ejP_JxZvAw.png\\")
+
+![\\"Google](\\"https://miro.medium.com/v2/resize:fill:64:64/1*Zkhl4Zz43z2_iR_ADlP-
+rg.png\\")
+
+Follow
+
+## Written by Daniel Gwerzman
+
+310 Followers
+
+·Writer for
+
+Google Developer Experts
+
+Bridging between technology and human. Google Developer Expert, Google for
+Startups Accelerator mentor, a tech-strategic consultant, entrepreneur, and a
+Maker.
+
+Follow
+
+Help
+
+Status
+
+About
+
+Careers
+
+Press
+
+Blog
+
+Privacy
+
+Terms
+
+Text to speech
+
+Teams
+

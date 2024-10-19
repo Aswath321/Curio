@@ -436,8 +436,8 @@ def preview_post():
         flash('No post content found. Please create a new post.')
         return redirect(url_for('create_post'))
 
-    generated_image = None
-    uploaded_image = None
+    generated_image = session.get('generated_image')
+    uploaded_image = session.get('uploaded_image')
 
     if request.method == 'POST':
         try:
@@ -453,6 +453,8 @@ def preview_post():
                         if generated_image_path:
                             generated_image = generated_image_path
                             session['generated_image'] = generated_image
+                            uploaded_image = None
+                            session.pop('uploaded_image', None)
                 
                 elif image_choice == '2':  # Upload from folder
                     if 'image' in request.files:
@@ -463,21 +465,28 @@ def preview_post():
                             file.save(filepath)
                             uploaded_image = filepath
                             session['uploaded_image'] = uploaded_image
+                            generated_image = None
+                            session.pop('generated_image', None)
+                
+                elif image_choice == '3':  # No image
+                    generated_image = None
+                    uploaded_image = None
+                    session.pop('generated_image', None)
+                    session.pop('uploaded_image', None)
 
             elif action == 'post':
-                image_choice = request.form.get('image_choice')
                 media_asset = None
                 title = None
                 content_type = 'text'
 
-                if image_choice == '1' and 'generated_image' in session:
-                    media_asset = linkedin_automator.upload_image(session['generated_image'])
+                if generated_image:
+                    media_asset = linkedin_automator.upload_image(generated_image)
                     content_type = 'image'
                     title = "AI-generated image"
-                elif image_choice == '2' and 'uploaded_image' in session:
-                    media_asset = linkedin_automator.upload_image(session['uploaded_image'])
+                elif uploaded_image:
+                    media_asset = linkedin_automator.upload_image(uploaded_image)
                     content_type = 'image'
-                    title = os.path.basename(session['uploaded_image'])
+                    title = os.path.basename(uploaded_image)
 
                 post_to_feed = request.form.get('post_to_feed') == 'yes'
                 post_to_groups = request.form.get('post_to_groups') == 'yes'
@@ -497,6 +506,11 @@ def preview_post():
                         if linkedin_automator.post_content(payload):
                             flash(f'Successfully posted to group {group_id}!')
 
+                # Clear session data after successful post
+                session.pop('post_content', None)
+                session.pop('generated_image', None)
+                session.pop('uploaded_image', None)
+
                 return redirect(url_for('dashboard'))
 
         except Exception as e:
@@ -509,9 +523,8 @@ def preview_post():
 
     return render_template('preview_post.html', 
                            post_content=post_content, 
-                           generated_image=session.get('generated_image'),
-                           uploaded_image=session.get('uploaded_image'))
-
+                           generated_image=generated_image,
+                           uploaded_image=uploaded_image)
 @app.route('/logout')
 def logout():
     session.clear()

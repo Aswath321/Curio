@@ -28,6 +28,7 @@ Curio isn't just another chatbot. It’s a multi-purpose assistant that handles 
    - **Reminders**: Set and prioritize reminders - low, medium and high that will get added to your google calender
    - **Generate Flashcards**: Upload PDF documents and even generate flashcards.
    - **GitHub Repository Management**: Create, update, and manage repos directly from Curio.
+   - And many more tools
 
 4. **File Handling & Parsing**
    - Ability to upload multiple files for analysis. Curio parses key data, stores them in **AWS S3** and access them using **AWS Cloudfront** for scalability, and generates summaries or insights from documents.
